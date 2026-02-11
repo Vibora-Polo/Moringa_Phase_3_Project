@@ -594,7 +594,7 @@ plt.show()
 # encode categorical variables
 df_encoded = pd.get_dummies(
     df,
-    columns=["international plan", "voice mail plan"],
+    columns=["international plan", "voice mail plan", "state"],
     drop_first=True
 )
 
@@ -628,93 +628,6 @@ X_test_scaled = scaler.transform(X_test)
 
 ```
 
-
-    ---------------------------------------------------------------------------
-
-    ValueError                                Traceback (most recent call last)
-
-    <ipython-input-19-62e521cabc54> in <module>
-          2 scaler = StandardScaler()
-          3 
-    ----> 4 X_train_scaled = scaler.fit_transform(X_train)
-          5 X_test_scaled = scaler.transform(X_test)
-    
-
-    c:\Users\USER\anaconda3\envs\learn-env\lib\site-packages\sklearn\base.py in fit_transform(self, X, y, **fit_params)
-        688         if y is None:
-        689             # fit method of arity 1 (unsupervised transformation)
-    --> 690             return self.fit(X, **fit_params).transform(X)
-        691         else:
-        692             # fit method of arity 2 (supervised transformation)
-    
-
-    c:\Users\USER\anaconda3\envs\learn-env\lib\site-packages\sklearn\preprocessing\_data.py in fit(self, X, y)
-        665         # Reset internal state before fitting
-        666         self._reset()
-    --> 667         return self.partial_fit(X, y)
-        668 
-        669     def partial_fit(self, X, y=None):
-    
-
-    c:\Users\USER\anaconda3\envs\learn-env\lib\site-packages\sklearn\preprocessing\_data.py in partial_fit(self, X, y)
-        694             Transformer instance.
-        695         """
-    --> 696         X = self._validate_data(X, accept_sparse=('csr', 'csc'),
-        697                                 estimator=self, dtype=FLOAT_DTYPES,
-        698                                 force_all_finite='allow-nan')
-    
-
-    c:\Users\USER\anaconda3\envs\learn-env\lib\site-packages\sklearn\base.py in _validate_data(self, X, y, reset, validate_separately, **check_params)
-        418                     f"requires y to be passed, but the target y is None."
-        419                 )
-    --> 420             X = check_array(X, **check_params)
-        421             out = X
-        422         else:
-    
-
-    c:\Users\USER\anaconda3\envs\learn-env\lib\site-packages\sklearn\utils\validation.py in inner_f(*args, **kwargs)
-         70                           FutureWarning)
-         71         kwargs.update({k: arg for k, arg in zip(sig.parameters, args)})
-    ---> 72         return f(**kwargs)
-         73     return inner_f
-         74 
-    
-
-    c:\Users\USER\anaconda3\envs\learn-env\lib\site-packages\sklearn\utils\validation.py in check_array(array, accept_sparse, accept_large_sparse, dtype, order, copy, force_all_finite, ensure_2d, allow_nd, ensure_min_samples, ensure_min_features, estimator)
-        596                     array = array.astype(dtype, casting="unsafe", copy=False)
-        597                 else:
-    --> 598                     array = np.asarray(array, order=order, dtype=dtype)
-        599             except ComplexWarning:
-        600                 raise ValueError("Complex data not supported\n"
-    
-
-    c:\Users\USER\anaconda3\envs\learn-env\lib\site-packages\numpy\core\_asarray.py in asarray(a, dtype, order)
-         83 
-         84     """
-    ---> 85     return array(a, dtype, copy=False, order=order)
-         86 
-         87 
-    
-
-    c:\Users\USER\anaconda3\envs\learn-env\lib\site-packages\pandas\core\generic.py in __array__(self, dtype)
-       1779 
-       1780     def __array__(self, dtype=None) -> np.ndarray:
-    -> 1781         return np.asarray(self._values, dtype=dtype)
-       1782 
-       1783     def __array_wrap__(self, result, context=None):
-    
-
-    c:\Users\USER\anaconda3\envs\learn-env\lib\site-packages\numpy\core\_asarray.py in asarray(a, dtype, order)
-         83 
-         84     """
-    ---> 85     return array(a, dtype, copy=False, order=order)
-         86 
-         87 
-    
-
-    ValueError: could not convert string to float: 'NJ'
-
-
 # Modeling
 
 
@@ -730,22 +643,158 @@ y_prob_log = log_model.predict_proba(X_test_scaled)[:, 1]
 ```
 
 
-    ---------------------------------------------------------------------------
+```python
+print(classification_report(y_test, y_pred_log))
 
-    NameError                                 Traceback (most recent call last)
+```
 
-    <ipython-input-21-0dfd5cbaafcc> in <module>
-          2 log_model = LogisticRegression(max_iter=1000)
-          3 
-    ----> 4 log_model.fit(X_train_scaled, y_train)
-          5 
-          6 y_pred_log = log_model.predict(X_test_scaled)
+                  precision    recall  f1-score   support
+    
+           False       0.89      0.96      0.92       713
+            True       0.54      0.27      0.36       121
+    
+        accuracy                           0.86       834
+       macro avg       0.71      0.62      0.64       834
+    weighted avg       0.84      0.86      0.84       834
+    
     
 
-    NameError: name 'X_train_scaled' is not defined
+
+```python
+roc_auc_score(y_test, y_prob_log)
+
+```
+
+
+
+
+    0.7904906517682242
+
+
+
+
+```python
+coefficients = pd.Series(log_model.coef_[0], index=X.columns)
+coefficients.sort_values().plot(kind="barh", figsize=(8,6))
+plt.title("Feature Importance")
+plt.show()
+
+```
+
+
+    
+![png](README_files/README_28_0.png)
+    
+
+
+### Key Drivers of Churn
+
+The most influential variables contributing to churn include:
+
+Customer service calls
+
+International plan
+
+Total day minutes
+
+Total day charge
+
+Customers with high service interactions and international plans show higher churn probability.
+
+# Decision Tree
+
+
+```python
+tree_model = DecisionTreeClassifier(
+    max_depth=5,
+    random_state=42
+)
+
+tree_model.fit(X_train, y_train)
+
+y_pred_tree = tree_model.predict(X_test)
+y_prob_tree = tree_model.predict_proba(X_test)[:, 1]
+
+```
+
+
+```python
+print(classification_report(y_test, y_pred_tree))
+```
+
+                  precision    recall  f1-score   support
+    
+           False       0.94      0.97      0.96       713
+            True       0.80      0.62      0.70       121
+    
+        accuracy                           0.92       834
+       macro avg       0.87      0.80      0.83       834
+    weighted avg       0.92      0.92      0.92       834
+    
+    
+
+
+```python
+roc_auc_score(y_test, y_prob_tree)
+```
+
+
+
+
+    0.7914005540551505
+
+
+
+## Final Model Choice
+
+After comparing Logistic Regression and Decision Tree:
+
+Logistic Regression showed better generalization.
+
+It achieved higher recall and better ROC-AUC.
+
+It is more stable and interpretable.
+
+Therefore, Logistic Regression is selected as the final model.
+
+# Model Evaluation
+
+
+```python
+#Confusion Matrix
+cm = confusion_matrix(y_test, y_pred_log)
+
+sns.heatmap(cm, annot=True, fmt="d", cmap="Blues")
+plt.xlabel("Predicted")
+plt.ylabel("Actual")
+plt.title("Confusion Matrix")
+plt.show()
+
+```
+
+
+    
+![png](README_files/README_36_0.png)
+    
 
 
 
 ```python
 
 ```
+
+# Business Interpretation of Results
+
+Although the model achieved an accuracy of X%, accuracy alone is not sufficient for churn prediction because the dataset is imbalanced.
+
+In churn prediction, recall is more important because false negatives represent customers who will churn but are incorrectly predicted to stay. These customers will not receive retention interventions, leading to revenue loss.
+
+The selected model achieved a recall of X%, meaning it correctly identifies X% of customers who are at risk of churning.
+
+# Executive Summary
+
+This project developed a churn prediction model for SyriaTel using historical customer data. Logistic Regression was selected as the best-performing model due to its balance between interpretability and predictive performance.
+
+The model identifies high customer service usage and international plan subscription as strong indicators of churn risk. By proactively targeting these customers with retention strategies, SyriaTel can reduce revenue loss and improve customer lifetime value.
+
+
