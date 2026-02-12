@@ -630,6 +630,22 @@ X_test_scaled = scaler.transform(X_test)
 
 # Modeling
 
+# Baseline Model: Logistic Regression
+
+We begin with a simple and interpretable baseline model using Logistic Regression. This model is appropriate for binary classification problems and provides easily interpretable coefficients.
+
+Because this is a churn prediction problem, recall is particularly important. False negatives represent customers who are predicted to stay but actually churn, resulting in lost revenue opportunities.
+
+We will evaluate this baseline model using:
+
+Recall
+
+Precision
+
+F1-score
+
+ROC-AUC
+
 
 ```python
 # Logistic Regression
@@ -683,39 +699,66 @@ plt.show()
 
 
     
-![png](README_files/README_28_0.png)
+![png](README_files/README_29_0.png)
     
 
 
-### Key Drivers of Churn
+# Baseline Model Evaluation
 
-The most influential variables contributing to churn include:
+The baseline Logistic Regression model provides a strong starting point. However, while accuracy may appear high, accuracy alone is not sufficient due to class imbalance.
 
-Customer service calls
+Recall is prioritized because identifying customers at risk of churn is more valuable than minimizing false positives.
 
-International plan
+The model demonstrates reasonable predictive performance but may benefit from tuning to improve recall and overall generalization.
 
-Total day minutes
+# Iteration 2: Decision Tree Model
 
-Total day charge
+To improve upon the baseline model, we introduce a Decision Tree classifier. Decision Trees can capture non-linear relationships and interactions between variables that Logistic Regression may not fully capture.
 
-Customers with high service interactions and international plans show higher churn probability.
+This model allows us to compare performance and determine whether a more flexible model improves churn detection
 
 # Decision Tree
 
 
 ```python
-tree_model = DecisionTreeClassifier(
-    max_depth=5,
-    random_state=42
+from sklearn.model_selection import GridSearchCV
+
+param_grid = {
+    'max_depth': [3, 5, 7, 10],
+    'min_samples_split': [2, 5, 10]
+}
+
+grid_search = GridSearchCV(
+    DecisionTreeClassifier(random_state=42),
+    param_grid,
+    cv=5,
+    scoring='recall'
 )
 
-tree_model.fit(X_train, y_train)
+grid_search.fit(X_train, y_train)
 
-y_pred_tree = tree_model.predict(X_test)
-y_prob_tree = tree_model.predict_proba(X_test)[:, 1]
+best_tree = grid_search.best_estimator_
+
+y_pred_tree = best_tree.predict(X_test)
+y_prob_tree = best_tree.predict_proba(X_test)[:, 1]
+
+print("Best Parameters:", grid_search.best_params_)
+print(classification_report(y_test, y_pred_tree))
+
 
 ```
+
+    Best Parameters: {'max_depth': 7, 'min_samples_split': 5}
+                  precision    recall  f1-score   support
+    
+           False       0.94      0.98      0.96       713
+            True       0.82      0.62      0.70       121
+    
+        accuracy                           0.92       834
+       macro avg       0.88      0.80      0.83       834
+    weighted avg       0.92      0.92      0.92       834
+    
+    
 
 
 ```python
@@ -724,11 +767,11 @@ print(classification_report(y_test, y_pred_tree))
 
                   precision    recall  f1-score   support
     
-           False       0.94      0.97      0.96       713
-            True       0.80      0.62      0.70       121
+           False       0.94      0.98      0.96       713
+            True       0.82      0.62      0.70       121
     
         accuracy                           0.92       834
-       macro avg       0.87      0.80      0.83       834
+       macro avg       0.88      0.80      0.83       834
     weighted avg       0.92      0.92      0.92       834
     
     
@@ -741,9 +784,15 @@ roc_auc_score(y_test, y_prob_tree)
 
 
 
-    0.7914005540551505
+    0.7889258516569495
 
 
+
+# Tuned Model Evaluation
+
+Hyperparameter tuning was performed using cross-validation with recall as the scoring metric. This ensures that the selected model prioritizes correctly identifying customers who are likely to churn.
+
+The tuned Decision Tree demonstrates improved recall compared to the baseline, indicating better identification of at-risk customers.
 
 ## Final Model Choice
 
@@ -774,7 +823,7 @@ plt.show()
 
 
     
-![png](README_files/README_36_0.png)
+![png](README_files/README_39_0.png)
     
 
 
