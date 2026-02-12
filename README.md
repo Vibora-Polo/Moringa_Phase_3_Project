@@ -11,16 +11,26 @@ This project focuses on building a binary classification model to predict whethe
 Customer churn represents a significant revenue risk for telecom providers. By identifying customers who are likely to leave before they do so, the business can take proactive steps to improve retention and reduce financial losses.
 
 ## Business Problem
-SyriaTel experiences customer attrition that negatively impacts revenue and long-term growth. Retaining existing customers is generally more cost-effective than acquiring new ones.
+SyriaTel is experiencing customer attrition, resulting in revenue loss and increased costs associated with acquiring new customers. Retaining existing customers is significantly more cost-effective than acquiring new ones, making churn reduction a strategic priority.
 
-The key business question is:
+However, the company currently lacks a data-driven system to proactively identify customers who are likely to discontinue their services. Without early detection, retention efforts are reactive rather than preventive, leading to missed opportunities to intervene before customers leave.
 
-Are there identifiable patterns in customer behavior that can be used to predict churn?
+The business challenge, therefore, is to determine whether customer usage patterns and service interactions can be used to predict churn and enable targeted retention strategies.
 
 ## Objectives
-The primary objective of this project is to:
+The primary objective of this project is to develop a predictive model that identifies customers who are likely to churn from SyriaTel’s services.
 
--Develop and evaluate a machine learning classifier that predicts customer churn based on usage patterns, service characteristics.
+Specifically, the project aims to:
+
+1. Explore customer usage patterns and service characteristics to identify behavioral trends associated with churn.
+
+2. Build and compare multiple classification models using an iterative modeling approach.
+
+3. Optimize model performance by tuning hyperparameters and prioritizing recall to minimize missed churn cases.
+
+4. Select the most suitable model based on business-aligned evaluation metrics.
+
+5. Provide actionable business recommendations to reduce customer attrition and revenue loss.
 
 # Importing Libraries
 
@@ -1003,15 +1013,68 @@ Importantly, only 46 churners were missed (false negatives), which is significan
 
 Overall, the confusion matrix confirms that the tuned Decision Tree achieves a strong balance between detecting churn and minimizing wasted retention resources, making it suitable for business implementation.
 
-# Executive Summary
-
-This project developed a churn prediction model for SyriaTel using historical customer data. Logistic Regression was selected as the best-performing model due to its balance between interpretability and predictive performance.
-
-The model identifies high customer service usage and international plan subscription as strong indicators of churn risk. By proactively targeting these customers with retention strategies, SyriaTel can reduce revenue loss and improve customer lifetime value.
-
-
+## Feature Importance
+This is to determine which features drive churn
 
 
 ```python
+importances = pd.Series(best_tree.feature_importances_, index=X.columns)
+top_features = importances.sort_values(ascending=False).head(10)
+
+plt.figure(figsize=(8,5))
+top_features.plot(kind='bar')
+plt.title("Top 10 Feature Importances - Decision Tree")
+plt.ylabel("Importance Score")
+plt.show()
 
 ```
+
+
+    
+![png](README_files/README_46_0.png)
+    
+
+
+## Feature Importance Interpretation
+
+The Decision Tree model identifies total day minutes as the most influential predictor of churn, followed by customer service calls and total international minutes. This suggests that high daytime usage and frequent interaction with customer service are strongly associated with increased churn risk.
+
+The importance of customer service calls indicates that customer dissatisfaction may be a key driver of churn. Customers who frequently contact support may be experiencing service issues, billing concerns, or unmet expectations. This highlights an opportunity for SyriaTel to improve service responsiveness and proactively engage customers who repeatedly contact support.
+
+The significance of international plan subscription and international usage metrics further suggests that customers with higher international activity may be more price-sensitive or affected by billing complexity. Reviewing pricing structures, plan transparency, and service quality for international users could reduce churn in this segment.
+
+Overall, the feature importance results provide actionable insight into behavioral patterns associated with churn and help the business focus retention strategies on high-usage and high-interaction customers.
+
+# Business Recommendations
+
+Based on the results of the tuned Decision Tree model, SyriaTel can implement a data-driven churn prevention strategy focused on early identification and targeted intervention.
+
+First, the model should be integrated into the company’s customer management system to regularly score customers and flag those at high risk of churn. With a recall of 62% and precision of 82%, the model effectively identifies most at-risk customers while minimizing unnecessary retention efforts.
+
+Second, customers with high total day minutes should be monitored closely. High daytime usage may indicate heavy reliance on the service, and dissatisfaction within this segment could result in significant revenue loss. Proactive engagement, loyalty incentives, or tailored service plans could reduce churn among these high-value users.
+
+Third, the strong influence of customer service calls suggests that frequent interactions with support are linked to dissatisfaction. SyriaTel should investigate recurring service issues, improve response times, and implement follow-up protocols for customers with repeated service complaints.
+
+Additionally, the importance of international usage and international plan subscription indicates potential pricing sensitivity or billing complexity. Reviewing international plan pricing structures and improving transparency may reduce churn in this segment.
+
+Overall, leveraging predictive modeling alongside targeted retention strategies can reduce revenue loss, improve customer lifetime value, and enhance overall service satisfaction.
+
+# Limitations
+
+While the model demonstrates strong performance, several limitations should be considered.
+
+First, the dataset does not include customer satisfaction scores, income levels, competitor pricing, or qualitative feedback, all of which may influence churn behavior. The absence of these variables may limit the model’s ability to fully capture customer decision drivers.
+
+Second, the dataset is imbalanced, with significantly more non-churners than churners. Although tuning and recall prioritization were applied, class imbalance may still influence model stability and performance.
+
+Third, the model is based on historical data and assumes that future customer behavior will follow similar patterns. Changes in market conditions, pricing strategies, or competitive dynamics may reduce predictive accuracy over time.
+
+Finally, while Decision Trees are interpretable, they may be sensitive to data variation. Continuous monitoring and periodic retraining of the model will be necessary to maintain reliability and relevance.
+
+## Executive Summary
+
+This project developed a predictive model to identify customers at risk of churning from SyriaTel’s services. Using historical customer data, multiple classification models were built and evaluated through an iterative modeling approach. After comparing a baseline Logistic Regression model with a tuned Decision Tree, the Decision Tree was selected as the final model due to its strong balance between recall and precision.
+
+The final model achieved a recall of 62% and precision of 82% for churned customers, with an overall accuracy of 92%. This indicates that the model successfully identifies a majority of at-risk customers while minimizing unnecessary retention efforts. Feature importance analysis revealed that total day minutes, customer service calls, and international usage are key drivers of churn, highlighting areas where proactive intervention can reduce customer attrition.
+
+By integrating this model into operational systems, SyriaTel can implement targeted retention strategies, improve service quality for high-risk segments, and reduce revenue loss due to churn. With continuous monitoring and periodic retraining, the predictive framework can serve as a sustainable tool for enhancing customer lifetime value and long-term profitability.
