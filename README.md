@@ -20,16 +20,7 @@ Are there identifiable patterns in customer behavior that can be used to predict
 ## Objectives
 The primary objective of this project is to:
 
--Develop and evaluate a machine learning classifier that predicts customer churn based on usage patterns, service features, and customer account information
-
--The objective of this project is to build a binary classification model that predicts whether a customer will churn based on their usage patterns and service characteristics.
-
-## Data
-Brief description of dataset.
-
-## Key Findings
-Short summary of insights.
-
+-Develop and evaluate a machine learning classifier that predicts customer churn based on usage patterns, service characteristics.
 
 # Importing Libraries
 
@@ -55,7 +46,6 @@ from sklearn.metrics import classification_report, confusion_matrix, roc_auc_sco
 
 
 ```python
-# Load dataset
 df = pd.read_csv("bigml.csv")
 
 df.head()
@@ -478,18 +468,10 @@ df.describe()
 
 
 ```python
-df["churn"].value_counts(normalize=True)
+# Convert the boolean to interger to make interpretation of tghe metrics easier
+df["churn"] = df["churn"].astype(int)
 
 ```
-
-
-
-
-    False    0.855086
-    True     0.144914
-    Name: churn, dtype: float64
-
-
 
 # Data Cleaning
 
@@ -530,7 +512,184 @@ df.isnull().sum() # There are no missing values in the dataset
 
 
 ```python
-# Now we need to drop columns that are not relevant to the project
+df.head()
+```
+
+
+
+
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>state</th>
+      <th>account length</th>
+      <th>area code</th>
+      <th>phone number</th>
+      <th>international plan</th>
+      <th>voice mail plan</th>
+      <th>number vmail messages</th>
+      <th>total day minutes</th>
+      <th>total day calls</th>
+      <th>total day charge</th>
+      <th>...</th>
+      <th>total eve calls</th>
+      <th>total eve charge</th>
+      <th>total night minutes</th>
+      <th>total night calls</th>
+      <th>total night charge</th>
+      <th>total intl minutes</th>
+      <th>total intl calls</th>
+      <th>total intl charge</th>
+      <th>customer service calls</th>
+      <th>churn</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>KS</td>
+      <td>128</td>
+      <td>415</td>
+      <td>382-4657</td>
+      <td>no</td>
+      <td>yes</td>
+      <td>25</td>
+      <td>265.1</td>
+      <td>110</td>
+      <td>45.07</td>
+      <td>...</td>
+      <td>99</td>
+      <td>16.78</td>
+      <td>244.7</td>
+      <td>91</td>
+      <td>11.01</td>
+      <td>10.0</td>
+      <td>3</td>
+      <td>2.70</td>
+      <td>1</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>OH</td>
+      <td>107</td>
+      <td>415</td>
+      <td>371-7191</td>
+      <td>no</td>
+      <td>yes</td>
+      <td>26</td>
+      <td>161.6</td>
+      <td>123</td>
+      <td>27.47</td>
+      <td>...</td>
+      <td>103</td>
+      <td>16.62</td>
+      <td>254.4</td>
+      <td>103</td>
+      <td>11.45</td>
+      <td>13.7</td>
+      <td>3</td>
+      <td>3.70</td>
+      <td>1</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>NJ</td>
+      <td>137</td>
+      <td>415</td>
+      <td>358-1921</td>
+      <td>no</td>
+      <td>no</td>
+      <td>0</td>
+      <td>243.4</td>
+      <td>114</td>
+      <td>41.38</td>
+      <td>...</td>
+      <td>110</td>
+      <td>10.30</td>
+      <td>162.6</td>
+      <td>104</td>
+      <td>7.32</td>
+      <td>12.2</td>
+      <td>5</td>
+      <td>3.29</td>
+      <td>0</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>OH</td>
+      <td>84</td>
+      <td>408</td>
+      <td>375-9999</td>
+      <td>yes</td>
+      <td>no</td>
+      <td>0</td>
+      <td>299.4</td>
+      <td>71</td>
+      <td>50.90</td>
+      <td>...</td>
+      <td>88</td>
+      <td>5.26</td>
+      <td>196.9</td>
+      <td>89</td>
+      <td>8.86</td>
+      <td>6.6</td>
+      <td>7</td>
+      <td>1.78</td>
+      <td>2</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>OK</td>
+      <td>75</td>
+      <td>415</td>
+      <td>330-6626</td>
+      <td>yes</td>
+      <td>no</td>
+      <td>0</td>
+      <td>166.7</td>
+      <td>113</td>
+      <td>28.34</td>
+      <td>...</td>
+      <td>122</td>
+      <td>12.61</td>
+      <td>186.9</td>
+      <td>121</td>
+      <td>8.41</td>
+      <td>10.1</td>
+      <td>3</td>
+      <td>2.73</td>
+      <td>3</td>
+      <td>0</td>
+    </tr>
+  </tbody>
+</table>
+<p>5 rows × 21 columns</p>
+</div>
+
+
+
+
+```python
+# Now we need to drop columns that are not relevant to the project like Phone number does not determine if a customer churns or not
 df = df.drop(columns=["phone number"])
 
 ```
@@ -549,7 +708,7 @@ plt.show()
 
 
     
-![png](README_files/README_14_0.png)
+![png](README_files/README_15_0.png)
     
 
 
@@ -560,25 +719,6 @@ sns.boxplot(x="churn", y="customer service calls", data=df)
 plt.title("Customer Service Calls by Churn")
 plt.show()
 
-# Customers who churn tend to make more customer service calls, indicating dissatisfaction.
-
-```
-
-
-    
-![png](README_files/README_15_0.png)
-    
-
-
-
-```python
-# International Plan vs Churn
-sns.countplot(x="international plan", hue="churn", data=df)
-plt.title("International Plan vs Churn")
-plt.show()
-
-# Customers with international plan show a higher churn rate
-
 ```
 
 
@@ -587,11 +727,29 @@ plt.show()
     
 
 
+Interpratation: Customers who churn tend to make more customer service calls, indicating dissatisfaction.
+
+
+```python
+# International Plan vs Churn
+sns.countplot(x="international plan", hue="churn", data=df)
+plt.title("International Plan vs Churn")
+plt.show()
+```
+
+
+    
+![png](README_files/README_18_0.png)
+    
+
+
+Customers with international plan show a lower churn rate
+
 # Encoding
 
 
 ```python
-# encode categorical variables
+# encode categorical variables using One hot encoding
 df_encoded = pd.get_dummies(
     df,
     columns=["international plan", "voice mail plan", "state"],
@@ -632,7 +790,7 @@ X_test_scaled = scaler.transform(X_test)
 
 # Baseline Model: Logistic Regression
 
-We begin with a simple and interpretable baseline model using Logistic Regression. This model is appropriate for binary classification problems and provides easily interpretable coefficients.
+We begin with a simple baseline model using Logistic Regression which is appropriate for binary classification problems and provides easily interpretable coefficients.
 
 Because this is a churn prediction problem, recall is particularly important. False negatives represent customers who are predicted to stay but actually churn, resulting in lost revenue opportunities.
 
@@ -649,7 +807,10 @@ ROC-AUC
 
 ```python
 # Logistic Regression
-log_model = LogisticRegression(max_iter=1000)
+log_model = LogisticRegression(
+    max_iter=1000,
+    class_weight='balanced'
+)
 
 log_model.fit(X_train_scaled, y_train)
 
@@ -666,12 +827,12 @@ print(classification_report(y_test, y_pred_log))
 
                   precision    recall  f1-score   support
     
-           False       0.89      0.96      0.92       713
-            True       0.54      0.27      0.36       121
+               0       0.94      0.77      0.84       713
+               1       0.33      0.69      0.45       121
     
-        accuracy                           0.86       834
-       macro avg       0.71      0.62      0.64       834
-    weighted avg       0.84      0.86      0.84       834
+        accuracy                           0.76       834
+       macro avg       0.64      0.73      0.65       834
+    weighted avg       0.85      0.76      0.79       834
     
     
 
@@ -684,24 +845,19 @@ roc_auc_score(y_test, y_prob_log)
 
 
 
-    0.7904906517682242
+    0.7918699940885328
 
 
 
+#### Model Performance Interpretation
 
-```python
-coefficients = pd.Series(log_model.coef_[0], index=X.columns)
-coefficients.sort_values().plot(kind="barh", figsize=(8,6))
-plt.title("Feature Importance")
-plt.show()
+Using class weights and a lower classification threshold, the model’s recall for churned customers is 69% meaning the model correctly identifies approximately 69% of customers who are at risk of churning. In a churn prediction context, this is critical because failing to detect churners (false negatives) leads directly to lost revenue and missed retention opportunities.
 
-```
+Although precision stands at 33%, meaning that only one-third of customers predicted to churn actually do so, this trade-off with recall is acceptable for the business objective. It is generally more costly to miss a customer who will leave than to incorrectly target a customer who was likely to stay. 
 
+The overall accuracy is 76%, which is expected when prioritizing recall in an imbalanced dataset.
 
-    
-![png](README_files/README_29_0.png)
-    
-
+The ROC-AUC score of 0.79 indicates that the model maintains good overall ability to distinguish between churners and non-churners. 
 
 # Baseline Model Evaluation
 
@@ -751,8 +907,8 @@ print(classification_report(y_test, y_pred_tree))
     Best Parameters: {'max_depth': 7, 'min_samples_split': 5}
                   precision    recall  f1-score   support
     
-           False       0.94      0.98      0.96       713
-            True       0.82      0.62      0.70       121
+               0       0.94      0.98      0.96       713
+               1       0.82      0.62      0.70       121
     
         accuracy                           0.92       834
        macro avg       0.88      0.80      0.83       834
@@ -767,8 +923,8 @@ print(classification_report(y_test, y_pred_tree))
 
                   precision    recall  f1-score   support
     
-           False       0.94      0.98      0.96       713
-            True       0.82      0.62      0.70       121
+               0       0.94      0.98      0.96       713
+               1       0.82      0.62      0.70       121
     
         accuracy                           0.92       834
        macro avg       0.88      0.80      0.83       834
@@ -788,6 +944,13 @@ roc_auc_score(y_test, y_prob_tree)
 
 
 
+# Decision Tree Interpretation
+The tuned Decision Tree model achieved a recall of 62% for churned customers, meaning it correctly identifies the majority of customers at risk of leaving. While slightly lower than the recall-optimized logistic regression, it provides significantly higher precision at 82%, indicating that most customers predicted to churn actually do so.
+
+The model achieved an F1-score of 0.70 and an overall accuracy of 92%, demonstrating strong and balanced performance. Compared to Logistic Regression, the Decision Tree provides a better trade-off between detecting churners and minimizing unnecessary retention efforts.
+
+Overall, the tuned Decision Tree model offers the best balance between recall and precision, making it the preferred model for practical business implementation.
+
 # Tuned Model Evaluation
 
 Hyperparameter tuning was performed using cross-validation with recall as the scoring metric. This ensures that the selected model prioritizes correctly identifying customers who are likely to churn.
@@ -796,49 +959,49 @@ The tuned Decision Tree demonstrates improved recall compared to the baseline, i
 
 ## Final Model Choice
 
-After comparing Logistic Regression and Decision Tree:
+After comparing the adjusted Logistic Regression and the tuned Decision Tree models, the Decision Tree was selected as the final model. While Logistic Regression achieved slightly higher recall, it had very low precision, resulting in many false positives and inefficient targeting.
 
-Logistic Regression showed better generalization.
-
-It achieved higher recall and better ROC-AUC.
-
-It is more stable and interpretable.
-
-Therefore, Logistic Regression is selected as the final model.
+The tuned Decision Tree achieved a better balance between recall (62%) and precision (82%), along with a strong F1-score of 0.70 and overall accuracy of 92%. This balance makes it more practical for identifying at-risk customers while minimizing unnecessary retention efforts, aligning well with the business objective of cost-effective churn reduction.
 
 # Model Evaluation
 
 
 ```python
 #Confusion Matrix
-cm = confusion_matrix(y_test, y_pred_log)
+from sklearn.metrics import confusion_matrix
+import seaborn as sns
+import matplotlib.pyplot as plt
 
-sns.heatmap(cm, annot=True, fmt="d", cmap="Blues")
+# Generate confusion matrix
+cm = confusion_matrix(y_test, y_pred_tree)
+
+# Plot heatmap
+plt.figure(figsize=(6,4))
+sns.heatmap(cm, annot=True, fmt="d", cmap="Blues",
+            xticklabels=["No Churn", "Churn"],
+            yticklabels=["No Churn", "Churn"])
+
 plt.xlabel("Predicted")
 plt.ylabel("Actual")
-plt.title("Confusion Matrix")
+plt.title("Confusion Matrix - Decision Tree")
 plt.show()
 
+
 ```
 
 
     
-![png](README_files/README_39_0.png)
+![png](README_files/README_43_0.png)
     
 
 
+# Confusion Matrix Interpretation
 
-```python
+The Decision Tree model correctly classified 696 non-churning customers and 75 churners. This demonstrates strong overall performance and effective identification of at-risk customers.
 
-```
+Importantly, only 46 churners were missed (false negatives), which is significantly lower than the baseline model. Additionally, the model produced only 17 false positives, indicating that retention efforts would be efficiently targeted with minimal unnecessary intervention.
 
-# Business Interpretation of Results
-
-Although the model achieved an accuracy of X%, accuracy alone is not sufficient for churn prediction because the dataset is imbalanced.
-
-In churn prediction, recall is more important because false negatives represent customers who will churn but are incorrectly predicted to stay. These customers will not receive retention interventions, leading to revenue loss.
-
-The selected model achieved a recall of X%, meaning it correctly identifies X% of customers who are at risk of churning.
+Overall, the confusion matrix confirms that the tuned Decision Tree achieves a strong balance between detecting churn and minimizing wasted retention resources, making it suitable for business implementation.
 
 # Executive Summary
 
@@ -847,3 +1010,8 @@ This project developed a churn prediction model for SyriaTel using historical cu
 The model identifies high customer service usage and international plan subscription as strong indicators of churn risk. By proactively targeting these customers with retention strategies, SyriaTel can reduce revenue loss and improve customer lifetime value.
 
 
+
+
+```python
+
+```
